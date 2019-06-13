@@ -40,9 +40,9 @@ RUN set -ex \
     && rm -rf /var/cache/yum/*
 
 RUN set -ex \
-    && git clone --depth=1 https://github.com/jumpserver/jumpserver.git \
-    && git clone --depth=1 https://github.com/jumpserver/coco.git \
-    && git clone --depth=1 https://github.com/jumpserver/docker-guacamole.git \
+    && git clone --depth=1 git://github.com/jumpserver/jumpserver.git \
+    && git clone --depth=1 git://github.com/jumpserver/coco.git \
+    && git clone --depth=1 git://github.com/jumpserver/docker-guacamole.git \
     && wget https://github.com/jumpserver/luna/releases/download/${LUNA_VER}/luna.tar.gz \
     && tar xf luna.tar.gz \
     && chown -R root:root luna \
