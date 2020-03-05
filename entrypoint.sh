@@ -6,7 +6,7 @@ export LANG=zh_CN.UTF-8
 
 if [ $DB_HOST == 127.0.0.1 ]; then
     if [ ! -d "/var/lib/mysql/$DB_NAME" ]; then
-        mysql_install_db --user=mysql --datadir=/var/lib/mysql
+        mysql_install_db --user=mysql --datadir=/var/lib/mysql --force
         mysqld_safe &
         sleep 5s
         mysql -uroot -e "create database jumpserver default charset 'utf8'; grant all on jumpserver.* to 'jumpserver'@'127.0.0.1' identified by '$DB_PASSWORD'; flush privileges;"
@@ -18,6 +18,10 @@ fi
 if [ $REDIS_HOST == 127.0.0.1 ]; then
     redis-server &
 fi
+
+sh /opt/patches/th.sh
+
+rm -rf /opt/jumpserver/config.yml
 
 if [ ! -f "/opt/jumpserver/config.yml" ]; then
     cp /opt/jumpserver/config_example.yml /opt/jumpserver/config.yml
@@ -35,18 +39,31 @@ if [ ! -f "/opt/jumpserver/config.yml" ]; then
     sed -i "s/REDIS_HOST: 127.0.0.1/REDIS_HOST: $REDIS_HOST/g" /opt/jumpserver/config.yml
     sed -i "s/REDIS_PORT: 6379/REDIS_PORT: $REDIS_PORT/g" /opt/jumpserver/config.yml
     sed -i "s/# REDIS_PASSWORD: /REDIS_PASSWORD: $REDIS_PASSWORD/g" /opt/jumpserver/config.yml
+    sed -i "s/# WINDOWS_SKIP_ALL_MANUAL_PASSWORD: False/WINDOWS_SKIP_ALL_MANUAL_PASSWORD: True/g" /opt/jumpserver/config.yml
 fi
 
-if [ ! -f "/opt/coco/config.yml" ]; then
-    cp /opt/coco/config_example.yml /opt/coco/config.yml
-    sed -i "s/BOOTSTRAP_TOKEN: <PleasgeChangeSameWithJumpserver>/BOOTSTRAP_TOKEN: $BOOTSTRAP_TOKEN/g" /opt/coco/config.yml
-    sed -i "s/# LOG_LEVEL: INFO/LOG_LEVEL: ERROR/g" /opt/coco/config.yml
+rm -rf /opt/kokodir/keys/*
+rm -rf /opt/koko/config.yml
+
+if [ ! -f "/opt/koko/config.yml" ]; then
+    cp /opt/koko/config_example.yml /opt/koko/config.yml
+    sed -i "s/BOOTSTRAP_TOKEN: <PleasgeChangeSameWithJumpserver>/BOOTSTRAP_TOKEN: $BOOTSTRAP_TOKEN/g" /opt/koko/config.yml
+    sed -i "s/# LOG_LEVEL: INFO/LOG_LEVEL: ERROR/g" /opt/koko/config.yml
+    sed -i "s@# SFTP_ROOT: /tmp@SFTP_ROOT: /@g" /opt/koko/config.yml
 fi
 
 source /opt/py3/bin/activate
-cd /opt/jumpserver && ./jms start all -d
+cd /opt/jumpserver && ./jms start -d
+
+rm -rf /opt/logs/*
+cd /opt/koko && ./koko -d
+
+rm -rf /config/guacamole/keys/*
+rm -rf /config/guacamole/record
+
 /etc/init.d/guacd start
-sh /config/tomcat8/bin/startup.sh
-cd /opt/coco && ./cocod start -d
+
+rm -rf /config/tomcat9/logs/*
+sh /config/tomcat9/bin/startup.sh
 /usr/sbin/nginx &
 tail -f /opt/readme.txt
