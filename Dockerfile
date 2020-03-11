@@ -54,6 +54,7 @@ RUN set -ex \
     && python3.6 -m venv /opt/py3 \
     && source /opt/py3/bin/activate \
     && PIP_repo=https://mirrors.aliyun.com/pypi/simple  \
+    && echo -e "[easy_install]\nindex_url = $PIP_repo" > ~/.pydistutils.cfg \
     && pip install wheel -i $PIP_repo \
     && pip install --upgrade pip setuptools==45.2.0 -i $PIP_repo \
     && pip install -r /opt/jumpserver/requirements/requirements.txt -i $PIP_repo \
