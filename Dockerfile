@@ -3,11 +3,11 @@ WORKDIR /opt
 
 ENV VERSION=1.5.6 \
     GUAC_VER=1.0.0 \
-    TOMCAT_VER=9.0.31
+    TOMCAT_VER=9.0.31 
 
 RUN set -ex \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && yum -y --nogpgcheck install wget gcc epel-release git yum-utils \
+    && yum -y --nogpgcheck install wget gcc epel-release git yum-utils nettle nettle-devel \
     && yum -y --nogpgcheck install python36 python36-devel \
     && yum -y --nogpgcheck localinstall --nogpgcheck https://mirrors.aliyun.com/rpmfusion/free/el/rpmfusion-free-release-7.noarch.rpm https://mirrors.aliyun.com/rpmfusion/nonfree/el/rpmfusion-nonfree-release-7.noarch.rpm \
     && yum install -y --nogpgcheck java-1.8.0-openjdk libtool \
@@ -35,24 +35,27 @@ RUN set -ex \
     && rm -rf /var/cache/yum/*
 
 RUN set -ex \
-    && wget http://134.175.107.119/download/jumpserver/1.5.6/jumpserver.tar.gz \
+    && wget http://134.175.107.119/download/jumpserver/${VERSION}/jumpserver.tar.gz \
     && tar xf jumpserver.tar.gz \
-    && wget http://134.175.107.119/download/guacamole/1.5.6/guacamole.tar.gz \
+    && wget http://134.175.107.119/download/guacamole/${VERSION}/guacamole.tar.gz \
     && tar xf guacamole.tar.gz \
-    && wget http://134.175.107.119/download/koko/1.5.6/koko-master-linux-amd64.tar.gz \
+    && wget http://134.175.107.119/download/koko/${VERSION}/koko-master-linux-amd64.tar.gz \
     && tar xf koko-master-linux-amd64.tar.gz \
     && mv kokodir koko \
     && chown -R root:root koko \
-    && wget http://134.175.107.119/download/luna/1.5.6/luna.tar.gz \
+    && wget http://134.175.107.119/download/luna/${VERSION}/luna.tar.gz \
     && tar xf luna.tar.gz \
     && chown -R root:root luna \
     && yum -y --nogpgcheck install $(cat /opt/jumpserver/requirements/rpm_requirements.txt) \
+    && yum clean all \
+    && rm -rf /var/cache/yum/*
+
+RUN set -ex \
     && python3.6 -m venv /opt/py3 \
-    && echo -e "[easy_install]\nindex_url = https://mirrors.aliyun.com/pypi/simple/" > ~/.pydistutils.cfg \
     && source /opt/py3/bin/activate \
-    && pip install wheel \
-    && pip install --upgrade pip setuptools \
-    && pip install -r /opt/jumpserver/requirements/requirements.txt \
+    && pip install wheel -i https://pypi.douban.com/simple \
+    && pip install --upgrade pip setuptools==45.2.0 -i https://pypi.douban.com/simple \
+    && pip install -r /opt/jumpserver/requirements/requirements.txt -i https://pypi.douban.com/simple \
     && cd docker-guacamole \
     && tar xf guacamole-server-${GUAC_VER}.tar.gz \
     && cd guacamole-server-${GUAC_VER} \
@@ -67,7 +70,7 @@ RUN set -ex \
     && rm -rf guacamole-server-${GUAC_VER} \
     && ldconfig \
     && cd /opt \
-    && wget https://github.com/ibuler/ssh-forward/releases/download/v0.0.5/linux-amd64.tar.gz \
+    && wget http://134.175.107.119/download/ssh-forward/v0.0.5/linux-amd64.tar.gz \
     && tar xf linux-amd64.tar.gz -C /bin/ \
     && chmod +x /bin/ssh-forward \
     && wget -O /etc/nginx/conf.d/jumpserver.conf https://demo.jumpserver.org/download/nginx/conf.d/jumpserver.conf \

@@ -40,6 +40,7 @@ if [ ! -f "/opt/jumpserver/config.yml" ]; then
     sed -i "s/REDIS_PORT: 6379/REDIS_PORT: $REDIS_PORT/g" /opt/jumpserver/config.yml
     sed -i "s/# REDIS_PASSWORD: /REDIS_PASSWORD: $REDIS_PASSWORD/g" /opt/jumpserver/config.yml
     sed -i "s/# WINDOWS_SKIP_ALL_MANUAL_PASSWORD: False/WINDOWS_SKIP_ALL_MANUAL_PASSWORD: True/g" /opt/jumpserver/config.yml
+    sed -i "s/# AUTH_LDAP_SEARCH_PAGED_SIZE: 1000/AUTH_LDAP_SEARCH_PAGED_SIZE: 10000/g" /opt/jumpserver/config.yml
 fi
 
 rm -rf /opt/kokodir/keys/*
