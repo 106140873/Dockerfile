@@ -53,9 +53,10 @@ RUN set -ex \
 RUN set -ex \
     && python3.6 -m venv /opt/py3 \
     && source /opt/py3/bin/activate \
-    && pip install wheel -i https://pypi.douban.com/simple \
-    && pip install --upgrade pip setuptools==45.2.0 -i https://pypi.douban.com/simple \
-    && pip install -r /opt/jumpserver/requirements/requirements.txt -i https://pypi.douban.com/simple \
+    && PIP_repo=https://pypi.douban.com/simple  \
+    && pip install wheel -i $PIP_repo \
+    && pip install --upgrade pip setuptools==45.2.0 -i $PIP_repo \
+    && pip install -r /opt/jumpserver/requirements/requirements.txt -i $PIP_repo \
     && cd docker-guacamole \
     && tar xf guacamole-server-${GUAC_VER}.tar.gz \
     && cd guacamole-server-${GUAC_VER} \
